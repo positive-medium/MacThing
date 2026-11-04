@@ -143,7 +143,7 @@ CT.on('command', action => {
 });
 // Skips made on the Mac (keyboard, Music, Spotify…) show here the same way.
 CT.on('skip', msg => { if (msg.action === 'next' || msg.action === 'previous') CT.flash(msg.action); });
-CT.on('dislike', () => { state.liked = null; CT.flash('thumbs-down'); });
+CT.on('dislike', () => { state.liked = null; CT.flash('prohibit'); });
 CT.on('favorite', msg => {
   state.liked = msg.favorited; // what the Now Playing heart shows, until the track changes
   CT.flash(msg.favorited ? 'heart' : 'heart-break');

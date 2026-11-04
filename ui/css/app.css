@@ -987,9 +987,8 @@ h3 {
   height: 28px;
 } /* a line tall even with no duration, so the title's room doesn't change */
 .np-rate {
-  height: 56px;
+  height: 56px; /* the same 72px buttons as the transport row, so they line up with previous and next */
   margin-bottom: 12px;
-  gap: 8px;
 }
 .np-controls {
   margin-top: 16px;

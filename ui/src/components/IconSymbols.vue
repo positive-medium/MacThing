@@ -7,7 +7,7 @@ import pause from '@phosphor-icons/core/assets/fill/pause-fill.svg?raw';
 import next from '@phosphor-icons/core/assets/fill/skip-forward-fill.svg?raw';
 import previous from '@phosphor-icons/core/assets/fill/skip-back-fill.svg?raw';
 import heart from '@phosphor-icons/core/assets/fill/heart-fill.svg?raw';
-import thumbsDown from '@phosphor-icons/core/assets/fill/thumbs-down-fill.svg?raw';
+import prohibit from '@phosphor-icons/core/assets/fill/prohibit-fill.svg?raw';
 import heartBreak from '@phosphor-icons/core/assets/bold/heart-break-bold.svg?raw';
 import note from '@phosphor-icons/core/assets/fill/music-notes-fill.svg?raw';
 import speaker from '@phosphor-icons/core/assets/fill/speaker-high-fill.svg?raw';
@@ -20,7 +20,7 @@ import trash from '@phosphor-icons/core/assets/fill/trash-fill.svg?raw';
 
 const ICONS = {
   'i-play': play, 'i-pause': pause, 'i-next': next, 'i-previous': previous,
-  'i-heart': heart, 'i-heart-break': heartBreak, 'i-thumbs-down': thumbsDown, 'i-note': note,
+  'i-heart': heart, 'i-heart-break': heartBreak, 'i-prohibit': prohibit, 'i-note': note,
   'i-speaker': speaker, 'i-muted': muted, 'i-spotify': spotify, 'i-open-on-mac': openOnMac, 'i-refresh': refresh, 'i-x': x,
   'i-trash': trash
 };

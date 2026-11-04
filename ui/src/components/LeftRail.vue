@@ -24,6 +24,7 @@ const subtitleClass = computed(() => [props.variant === 'media' || props.variant
 
 <template>
   <div class="left-rail flex-col justify-between" :data-variant="variant">
+    <div v-if="$slots.top" class="flex-none"><slot name="top" /></div>
     <div v-if="views" class="left-rail-views">
       <div v-for="(v, key) in views" :key="key" class="left-rail-content left-rail-view fade-view flex-col gap-12" :class="{ on: key === view }" :data-view="key">
         <p v-if="v.eyebrow" :class="eyebrowClass">{{ v.eyebrow }}</p>
