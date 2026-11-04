@@ -355,7 +355,7 @@ export function initializeRuntime(state) {
     }
     if (action === 'settings') return CT.current === 'settings' ? CT.closeSettings() : CT.show('settings');
     // Favoriting is for the song on screen, so only Now Playing does it.
-    if ((action === 'favorite' || action === 'unfavorite') && CT.current !== 'nowplaying') return;
+    if ((action === 'favorite' || action === 'unfavorite' || action === 'dislike') && CT.current !== 'nowplaying') return;
     CT.command(action);
   }
 

@@ -3,6 +3,7 @@
 //
 //   musicctl favorite    set "favorited" on the current track   → {"ok":true,"favorited":true}
 //   musicctl unfavorite  clear it                                → {"ok":true,"favorited":false}
+//   musicctl dislike     set "disliked" (Suggest Less Like This) → {"ok":true,"disliked":true}
 //   musicctl play        start playback                          → {"ok":true}
 // Failures print {"ok":false,"error":"…","code":N} and exit 1.
 
@@ -46,13 +47,20 @@ let scripts = [
       return false
     end tell
     """,
+  "dislike": """
+    tell application id "com.apple.Music"
+      if player state is stopped then error "Nothing is playing in Music" number 1
+      set disliked of current track to true
+      return true
+    end tell
+    """,
   "play": """
     tell application id "com.apple.Music" to play
     """,
 ]
 
 guard let command = CommandLine.arguments.dropFirst().first, let source = scripts[command] else {
-  FileHandle.standardError.write("usage: musicctl favorite|unfavorite|play\n".data(using: .utf8)!)
+  FileHandle.standardError.write("usage: musicctl favorite|unfavorite|dislike|play\n".data(using: .utf8)!)
   exit(2)
 }
 
@@ -66,4 +74,5 @@ if let error {
   ])
   exit(1)
 }
-reply(command == "play" ? ["ok": true] : ["ok": true, "favorited": result?.booleanValue ?? false])
+let flag = result?.booleanValue ?? false
+reply(command == "play" ? ["ok": true] : command == "dislike" ? ["ok": true, "disliked": flag] : ["ok": true, "favorited": flag])

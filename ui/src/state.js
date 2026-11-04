@@ -10,7 +10,7 @@ export const state = reactive({
   // The Mac's Apple emoji as data URLs, {'🔥': …, '💀': …, '🕶️': …}; empty until the Mac sends them.
   emoji: {},
   volume: 0, volumeUnsupported: false, volumeNote: '', volumeIcon: '', showVolume: false,
-  flash: { icon: 'play', color: '', key: 0 }, flashing: false, toast: '', note: '', showNote: false,
+  flash: { icon: 'play', color: '', key: 0 }, flashing: false, liked: null, toast: '', note: '', showNote: false,
   // The back button's usage refresh: '' idle, 'spin' (the ⟳ turns once), 'pending' (••• until the
   // Mac answers), 'failed' (✕ until another try is allowed). usageRefreshWait: 'wait 45s', briefly.
   usageRefresh: '', usageRefreshWait: ''
@@ -143,6 +143,8 @@ CT.on('command', action => {
 });
 // Skips made on the Mac (keyboard, Music, Spotify…) show here the same way.
 CT.on('skip', msg => { if (msg.action === 'next' || msg.action === 'previous') CT.flash(msg.action); });
+CT.on('dislike', () => { state.liked = null; CT.flash('thumbs-down'); });
 CT.on('favorite', msg => {
+  state.liked = msg.favorited; // what the Now Playing heart shows, until the track changes
   CT.flash(msg.favorited ? 'heart' : 'heart-break');
 });

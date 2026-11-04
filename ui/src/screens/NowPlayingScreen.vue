@@ -69,6 +69,10 @@ function fitTitle() {
 // Now Playing message (every 15s, and with each play/pause) replaces state.np.
 watch([() => np.value.active, () => np.value.artist, () => np.value.title, album, () => state.current], () => nextTick(fitTitle));
 watch(() => [state.np, state.npAt], updateProgress);
+// The heart only knows what the last favorite or unfavorite did, so a new track starts unknown.
+watch([() => np.value.artist, () => np.value.title], () => { state.liked = null; });
+// One press favorites, the next unfavorites (the back button's one and two presses).
+const heart = () => gesture(state.liked ? 'unfavorite' : 'favorite');
 // Touch: tapping the media card (the art) plays or pauses, the same as a knob press; a tap
 // elsewhere on the screen does nothing. With nothing playing, tapping today's calendar cover has
 // the Mac draw a random other one (until tomorrow's). Swiping sideways anywhere on the screen
@@ -98,6 +102,10 @@ onUnmounted(() => { clearInterval(timer); if (removeGestures) removeGestures(); 
     <LeftRail ref="rail" :variant="np.active ? 'media' : 'date'" :eyebrow="np.active ? np.artist : IDLE.eyebrow" :title="np.active ? np.title : IDLE.title" :subtitle="np.active ? album : IDLE.subtitle" :muted-subtitle="np.active && !np.album">
       <template #lower>
         <template v-if="np.active">
+          <div v-if="np.source && np.source.bundleId === 'com.apple.Music'" class="np-rate flex items-center primary"><!-- Apple Music only, as with the back button -->
+            <button type="button" class="np-btn np-heart" :class="{ liked: state.liked }" :aria-label="state.liked ? 'Unfavorite' : 'Favorite'" @click="heart"><svg><use href="#i-heart" /></svg></button>
+            <button type="button" class="np-btn" aria-label="Dislike and skip" @click="gesture('dislike')"><svg><use href="#i-thumbs-down" /></svg></button>
+          </div>
           <div class="np-progress flex items-center gap-8 primary"><UiProgress :value="fraction" /><span class="np-duration flex-none regular">{{ np.duration ? durationText(np.duration) : '' }}</span></div>
           <div class="np-controls flex items-center justify-between primary"><!-- the same commands as the knob's presses and the swipes -->
             <button type="button" class="np-btn" aria-label="Previous" @click="gesture('previous')"><svg><use href="#i-previous" /></svg></button>

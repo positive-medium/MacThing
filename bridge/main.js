@@ -285,6 +285,7 @@ async function runCommand(action) {
   log.info(`[input] ${action}`);
   lastDeviceCommand = Date.now();
   if (action === 'favorite' || action === 'unfavorite') return setFavorite(action);
+  if (action === 'dislike') return setDislike();
   try {
     if (!current.np.active && (action === 'playpause' || action === 'play')) {
       const r = await musicctl('play'); // nothing playing: start Apple Music
@@ -311,6 +312,24 @@ async function setFavorite(command) {
     log.warn('[favorite]', r.error);
     // -1743: the user said no to "musicctl wants to control Music".
     link?.send({ type: 'toast', text: r.code === -1743 ? 'Allow musicctl to control Music' : 'Couldn’t favorite this song' });
+  }
+}
+
+/** "Suggest Less Like This" on the playing Apple Music song, then on to the next one. */
+async function setDislike() {
+  const { np } = current;
+  if (np.active && !np.playing) return;
+  if (np.bundleId !== 'com.apple.Music') {
+    return link?.send({ type: 'toast', text: np.active ? 'Dislike works with Apple Music' : 'Nothing playing' });
+  }
+  const r = await musicctl('dislike');
+  if (r.ok) {
+    log.info(`[dislike] ${np.title}`);
+    link?.send({ type: 'dislike' });
+    try { await source.command('next'); } catch (err) { log.warn('[dislike] skip failed:', err.message); }
+  } else {
+    log.warn('[dislike]', r.error);
+    link?.send({ type: 'toast', text: r.code === -1743 ? 'Allow musicctl to control Music' : 'Couldn’t dislike this song' });
   }
 }
 

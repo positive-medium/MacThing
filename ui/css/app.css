@@ -986,6 +986,11 @@ h3 {
 .np-progress {
   height: 28px;
 } /* a line tall even with no duration, so the title's room doesn't change */
+.np-rate {
+  height: 56px;
+  margin-bottom: 12px;
+  gap: 8px;
+}
 .np-controls {
   margin-top: 16px;
   height: 56px;
@@ -1008,6 +1013,9 @@ h3 {
 .np-btn svg {
   width: 28px;
   height: 28px;
+}
+.np-heart:not(.liked) svg {
+  opacity: 0.45; /* not known to be a favorite */
 }
 .np-btn-main svg {
   width: 36px;
