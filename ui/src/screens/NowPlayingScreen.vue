@@ -97,7 +97,14 @@ onUnmounted(() => { clearInterval(timer); if (removeGestures) removeGestures(); 
   <section ref="root" id="screen-nowplaying" class="screen fill flex" :class="{ active: state.current === 'nowplaying', leaving: state.leaving === 'nowplaying', idle: !np.active, 'idle-cover': !np.active && !!coverUrl, paused: np.active && !np.playing, 'no-duration': np.active && !np.duration }">
     <LeftRail ref="rail" :variant="np.active ? 'media' : 'date'" :eyebrow="np.active ? np.artist : IDLE.eyebrow" :title="np.active ? np.title : IDLE.title" :subtitle="np.active ? album : IDLE.subtitle" :muted-subtitle="np.active && !np.album">
       <template #lower>
-        <div v-if="np.active" class="np-progress flex items-center gap-8 primary"><UiProgress :value="fraction" /><span class="np-duration flex-none regular">{{ np.duration ? durationText(np.duration) : '' }}</span></div>
+        <template v-if="np.active">
+          <div class="np-progress flex items-center gap-8 primary"><UiProgress :value="fraction" /><span class="np-duration flex-none regular">{{ np.duration ? durationText(np.duration) : '' }}</span></div>
+          <div class="np-controls flex items-center justify-between primary"><!-- the same commands as the knob's presses and the swipes -->
+            <button type="button" class="np-btn" aria-label="Previous" @click="gesture('previous')"><svg><use href="#i-previous" /></svg></button>
+            <button type="button" class="np-btn np-btn-main" :aria-label="np.playing ? 'Pause' : 'Play'" @click="gesture('playpause')"><svg><use :href="np.playing ? '#i-pause' : '#i-play'" /></svg></button>
+            <button type="button" class="np-btn" aria-label="Next" @click="gesture('next')"><svg><use href="#i-next" /></svg></button>
+          </div>
+        </template>
         <span v-else class="np-time">{{ time }}</span>
       </template>
     </LeftRail>
