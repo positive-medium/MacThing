@@ -43,10 +43,15 @@ export class Calendar extends EventEmitter {
   }
 
   async refresh() {
-    const from = new Date();
-    from.setHours(0, 0, 0, 0);
-    const to = new Date(from);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    // From today (no past days), a week ahead at least, and on to the end of this month for the
+    // month view's dates.
+    const from = today;
+    const to = new Date(today);
     to.setDate(to.getDate() + DAYS_AHEAD + 1);
+    const monthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 1);
+    if (monthEnd > to) to.setTime(monthEnd.getTime());
     try {
       const r = await this.helper.events(from.getTime(), to.getTime());
       this.all = r.ok ? r.events : [];

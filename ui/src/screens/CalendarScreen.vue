@@ -109,7 +109,59 @@ watch(
   },
 );
 // The calendar button, pressed on the calendar, swaps the agenda for the month and back.
-const view = ref("agenda");
+const view = ref("agenda"); // agenda | month | day (a date tapped in the month)
+const detail = ref(null); // an event tapped in the agenda or a day: its card, over the stage
+const picked = ref(null); // that date's day number
+const dayList = ref(null);
+const dayShown = ref(0);
+const dayEvents = computed(() =>
+  state.calendar.status !== "ok" || picked.value == null
+    ? []
+    : state.calendar.events
+        .filter(
+          (e) =>
+            CT.dayNumber(e.start) <= picked.value &&
+            CT.dayNumber(Math.max(e.end - 1, e.start)) >= picked.value,
+        )
+        .sort((a, b) => b.allDay - a.allDay || a.start - b.start),
+);
+const dayLabel = computed(() => {
+  if (picked.value == null) return "";
+  const p = CT.parts(picked.value * 86400000, 0); // a day number is its own UTC midnight
+  const today = CT.dayNumber(state.now);
+  const name = CT.DAYS[p.day] + ", " + CT.MONTHS[p.month] + " " + p.date;
+  return picked.value === today ? "Today · " + name : name;
+});
+// As in the agenda: events go until the rest fit, then "+N more".
+async function fitDay() {
+  dayShown.value = dayEvents.value.length;
+  await nextTick();
+  while (dayList.value && dayShown.value > 1 && dayList.value.scrollHeight > dayList.value.clientHeight) {
+    dayShown.value--;
+    await nextTick();
+  }
+}
+watch([dayEvents, view], () => view.value === "day" && fitDay());
+const dayName = (ms) => {
+  const p = CT.parts(ms);
+  return CT.DAYS[p.day].slice(0, 3) + ", " + CT.MONTHS[p.month].slice(0, 3) + " " + p.date;
+};
+const detailWhen = computed(() => {
+  const e = detail.value;
+  if (!e) return { date: "", time: "" };
+  const last = Math.max(e.end - 1, e.start); // an all-day event ends at the midnight after it
+  const multi = CT.dayNumber(last) > CT.dayNumber(e.start);
+  if (e.allDay)
+    return { date: dayName(e.start) + (multi ? " – " + dayName(last) : ""), time: "All day" };
+  return {
+    date: dayName(e.start) + (multi ? " – " + dayName(last) : ""),
+    time: CT.timeText(e.start) + (e.end > e.start ? " – " + CT.timeText(e.end) : ""),
+  };
+});
+function pickDate({ year, month, date }) {
+  picked.value = Date.UTC(year, month, date) / 86400000;
+  view.value = "day";
+}
 const screen = CT.screen("calendar");
 screen.show = () => {
   nextTick(fitClock);
@@ -117,10 +169,12 @@ screen.show = () => {
 };
 // When idle: the agenda or the month.
 screen.showView = (v) => {
+  detail.value = null;
   if (v === "agenda" || v === "month") view.value = v;
 };
 screen.reselect = (steps = 1) => {
-  if (steps % 2) view.value = view.value === "agenda" ? "month" : "agenda";
+  if (detail.value) { detail.value = null; return; } // the button closes an open card first
+  if (steps % 2) view.value = view.value === "agenda" ? "month" : view.value === "day" ? "month" : "agenda";
 };
 onMounted(() => {
   fitClock();
@@ -146,7 +200,7 @@ onMounted(() => {
     >
       <template #lower>
         <Transition name="view"
-          ><span v-if="view === 'month'"
+          ><span v-if="view === 'month' || view === 'day'"
             ><template v-if="next"
               >{{ CT.timeText(next.start) }}
               <b class="primary medium">{{ next.title }}</b></template
@@ -159,8 +213,16 @@ onMounted(() => {
     </LeftRail>
     <ScreenStage class="bg-panel">
       <Transition name="view"
-        ><CalendarMonth v-if="view === 'month'" class="stage-safe" :now="state.now"
+        ><CalendarMonth v-if="view === 'month'" class="stage-safe" :now="state.now" :events="state.calendar.status === 'ok' ? state.calendar.events : []" @pick="pickDate"
       /></Transition>
+      <Transition name="view"><div v-if="view === 'day'" class="k-dayview stage-safe" @click="view = 'month'">
+        <div ref="dayList" class="k-list overflow-hidden fill">
+          <div class="k-day font-small medium">{{ dayLabel }}</div>
+          <div v-if="!dayEvents.length" class="mt-16 font-small medium muted">Nothing scheduled</div>
+          <CalendarEvent v-for="(event, i) in dayEvents.slice(0, dayShown)" :key="i" :event="event" :now="state.now" @click.stop="detail = event" />
+          <div v-if="dayEvents.length > dayShown" class="mt-16 font-small medium muted">+{{ dayEvents.length - dayShown }} more</div>
+        </div>
+      </div></Transition>
       <Transition name="view"><div v-show="view === 'agenda'" ref="list" class="k-list overflow-hidden stage-safe">
         <template v-for="section in kept" :key="section.label">
           <div
@@ -175,6 +237,7 @@ onMounted(() => {
             :key="i"
             :event="event"
             :now="state.now"
+            @click="detail = event"
           />
           <div
             v-if="section.events.length > section.shown"
@@ -188,6 +251,13 @@ onMounted(() => {
             }}
           </div>
         </template>
+      </div></Transition>
+      <Transition name="view"><div v-if="detail" class="k-detail stage-safe flex-col" @click.stop="detail = null"><!-- tap it to close -->
+        <div class="k-detail-cal flex items-center gap-8 font-small medium muted"><span class="k-dot flex-none" :style="{ background: detail.color || 'var(--muted)' }" /><span class="truncate">{{ detail.calendar }}</span></div>
+        <h3 class="k-detail-title font-medium semibold">{{ detail.title || 'Untitled' }}</h3>
+        <div class="font-small medium">{{ detailWhen.date }}</div>
+        <div class="font-small secondary">{{ detailWhen.time }}</div>
+        <div v-if="detail.location" class="k-detail-where font-small weight-light muted">{{ detail.location }}</div>
       </div></Transition>
       <Transition name="view"
         ><StageMessage

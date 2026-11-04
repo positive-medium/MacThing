@@ -1672,6 +1672,20 @@ h3 {
   flex: none;
   width: 28px; /* a two-digit date */
 }
+/* A date is a touch target: a bigger area around it than its two digits. */
+.k-week > span {
+  position: relative;
+}
+.k-week > .k-pick::after {
+  content: '';
+  position: absolute;
+  inset: -8px -6px;
+}
+/* The day agenda a tapped date opens: tap it to go back to the month. */
+.k-dayview {
+  position: absolute;
+  inset: 0;
+}
 /* Centred on the date (so a two-digit date lines up with its column), overhanging the row. */
 .k-today {
   display: block;
@@ -1679,6 +1693,23 @@ h3 {
   height: 56px;
   margin: -14px 0 0 -15px;
   fill: var(--today);
+}
+/* A date with events: a small dot under it (inside the circle for today). */
+.k-mark {
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  width: 5px;
+  height: 5px;
+  margin: 1px 0 0 -2.5px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.k-week > span:not(.k-pick) .k-mark {
+  display: none;
+}
+.k-today-dot {
+  fill: var(--today-ink);
 }
 .k-today text {
   font-size: 22px;
@@ -1726,6 +1757,33 @@ h3 {
 }
 .k-day + .k-event {
   margin-top: 12px;
+}
+
+/* An event's card, over the agenda or a day: calendar, title, when and where. */
+.k-detail {
+  position: absolute;
+  inset: 0;
+  gap: 12px;
+  background: var(--panel);
+  z-index: 2;
+}
+.k-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+.k-detail-title {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+}
+.k-detail-where {
+  white-space: pre-line;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
 }
 
 /* ===== settings ===== */
